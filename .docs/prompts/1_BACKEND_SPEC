@@ -1,0 +1,39 @@
+# Especificación Técnica: Backend API (OCR Service)
+
+## Contexto
+Estamos construyendo el backend de "AutoTramite".
+- **Lenguaje:** Python 3.13.11
+- **Framework:** FastAPI
+- **Librería OCR:** EasyOCR (con soporte CPU).
+- **Entorno:** Windows.
+
+## Objetivo
+Crear la estructura base del servidor y el primer endpoint para escanear una INE.
+
+## Requerimientos de Código
+
+### 1. Estructura de Archivos
+Generar una estructura modular:
+- `app/main.py`: Punto de entrada.
+- `app/services/ocr_service.py`: Lógica pura de extracción de texto.
+- `app/utils/image_processing.py`: Pre-procesamiento con OpenCV (escala de grises, umbral) antes del OCR.
+
+### 2. Configuración de `main.py`
+- Inicializar `FastAPI`.
+- Configurar **CORS** permitiendo orígenes `["http://localhost:3000"]` (para que el frontend Next.js no falle).
+- Incluir un endpoint de salud (`GET /health`).
+
+### 3. Endpoint: Escaneo de INE
+- **Ruta:** `POST /api/v1/scan-ine`
+- **Input:** Recibe un archivo de imagen (`UploadFile`).
+- **Proceso:**
+  1. Leer la imagen en memoria (sin guardarla en disco si es posible, o usar `tempfile`).
+  2. Pasar la imagen a `ocr_service`.
+  3. `ocr_service` usa `easyocr` (idioma 'es') para extraer texto.
+  4. Filtrar los resultados para buscar palabras clave: "NOMBRE", "CURP", "DOMICILIO".
+- **Output:** JSON con los datos estructurados.
+
+## Notas para el Asistente
+- Usa `uvicorn` para el servidor.
+- Maneja excepciones (ej: si el archivo no es una imagen).
+- Usa `python-multipart` para la subida de archivos.

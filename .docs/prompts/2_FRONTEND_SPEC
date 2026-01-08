@@ -1,0 +1,30 @@
+# Especificación Técnica: Frontend Component (INE Uploader)
+
+## Contexto
+Estamos en una aplicación Next.js 14 (App Router) usando TypeScript y Tailwind CSS.
+
+## Objetivo
+Crear un componente visual atractivo para subir la foto de la INE y mostrar los resultados extraídos por el backend.
+
+## Requerimientos de Código
+
+### 1. Componente: `IneUploader.tsx`
+- **Diseño:**
+  - Área de "Drag & Drop" o botón para seleccionar archivo.
+  - Previsualización de la imagen seleccionada.
+  - Botón "Procesar INE".
+  - Estado de "Cargando" (Spinner) mientras el backend responde.
+
+### 2. Lógica (Hook o Función)
+- Función `handleUpload`:
+  - Debe usar `fetch` o `axios` para enviar la imagen al endpoint `http://localhost:8000/api/v1/scan-ine`.
+  - Debe usar `FormData` para enviar el archivo.
+  - Manejo de errores (si el servidor está apagado o falla).
+
+### 3. Visualización de Respuesta
+- Si el backend responde con éxito, mostrar un formulario con los campos (Nombre, CURP) autocompletados con la data recibida.
+- Permitir al usuario editar los campos si el OCR falló en alguna letra.
+
+## Estilo
+- Usa clases de Tailwind CSS.
+- Estilo moderno, limpio, bordes redondeados.
