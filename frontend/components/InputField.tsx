@@ -1,4 +1,17 @@
-export default function InputField({ label, value, readOnly = true }) {
+import React from 'react';
+
+// Definimos la interfaz para las propiedades del componente
+interface InputFieldProps {
+  label: string;
+  value: string | number; // Aceptamos string o número para mayor flexibilidad
+  readOnly?: boolean;     // El signo '?' indica que es opcional
+}
+
+export default function InputField({ 
+  label, 
+  value, 
+  readOnly = true 
+}: InputFieldProps) {
   return (
     <div className="mb-4">
       <label className="block text-gray-500 text-sm font-medium mb-1.5">

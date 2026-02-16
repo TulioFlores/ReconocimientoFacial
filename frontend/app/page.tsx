@@ -1,7 +1,7 @@
-import Header from './components/Header';
-import IdUploader from './components/IdUploader';
-import ValidationForm from './components/ValidationForm';
-import ActionBar from './components/ActionBar';
+import Header from '../components/Header';
+import IdUploader from '../components/IdUploader';
+import ValidationForm from '../components/ValidationForm';
+import ActionBar from '../components/ActionBar';
 
 function App() {
   return (

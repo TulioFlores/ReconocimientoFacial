@@ -1,7 +1,7 @@
 import { FileText, CreditCard } from 'lucide-react'; // Iconos para las tarjetas
-import Header from '../components/Header';
-import UserProfileCard from '../components/UserProfileCard';
-import ServiceCard from '../components/ServiceCard';
+import Header from '../../components/Header';
+import UserProfileCard from '../../components/UserProfileCard';
+import ServiceCard from '../../components/ServiceCard';
 
 function DashboardPage() {
   return (

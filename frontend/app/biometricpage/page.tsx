@@ -1,7 +1,7 @@
-import Header from '../components/Header';
-import CameraZone from '../components/CameraZone';
-import InstructionPanel from '../components/InstructionPanel';
-import BiometricActions from '../components/BiometricActions';
+import Header from '../../components/Header';
+import CameraZone from '../../components/CameraZone';
+import InstructionPanel from '../../components/InstructionPanel';
+import BiometricActions from '../../components/BiometricActions';
 import { Lock } from 'lucide-react'; // Importamos el icono de candado directo aquí
 
 function BiometricPage() {
