@@ -1,12 +1,10 @@
 import { FileText, CreditCard } from 'lucide-react'; // Iconos para las tarjetas
-import Header from '../../components/Header';
-import UserProfileCard from '../../components/UserProfileCard';
-import ServiceCard from '../../components/ServiceCard';
+import UserProfileCard from '../../components/dashboard/UserProfileCard';
+import ServiceCard from '../../components/dashboard/ServiceCard';
 
 function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-      <Header /> {/* Reutilizado (nota: podrías pasarle un prop title="Government Portal" si lo hiciste dinámico) */}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
         

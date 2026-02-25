@@ -1,4 +1,4 @@
-import InputField from './InputField';
+import InputField from '../InputField';
 
 export default function ValidationForm() {
   // Estos datos vendrían de tu OCR más adelante
@@ -10,8 +10,8 @@ export default function ValidationForm() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
-      <h2 className="text-gray-700 font-semibold mb-6">Data Validation Form</h2>
+    <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full">
+      <h2 className="text-foreground font-semibold mb-6">Data Validation Form</h2>
       
       <div className="space-y-1">
         <InputField label="CURP" value={mockData.curp} />
