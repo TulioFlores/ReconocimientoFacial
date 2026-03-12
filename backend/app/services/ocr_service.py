@@ -1,63 +1,52 @@
-from typing import List, Tuple
+from typing import List
 import numpy as np
 import cv2
 
 try:
     import easyocr
-except Exception as e:
+except Exception:
     easyocr = None
 
-
+# Diccionario para reutilizar el lector y no cargar el modelo en cada petición
 _readers = {}
 
-
 def _get_reader(lang: str = "es"):
+    """
+    Carga el modelo de EasyOCR solo una vez (Singleton) para ahorrar RAM.
+    """
     if easyocr is None:
-        raise RuntimeError("easyocr no está instalado. Instala con: pip install easyocr")
+        raise RuntimeError("EasyOCR no instalado. Ejecuta: pip install easyocr")
+
     if lang not in _readers:
+        # gpu=False si no tienes tarjeta NVIDIA configurada con CUDA
         _readers[lang] = easyocr.Reader([lang], gpu=False)
     return _readers[lang]
 
-
-def _bbox_top(bbox: List[Tuple[float, float]]) -> float:
-    return min(pt[1] for pt in bbox)
-
-
-def extract_text_from_image(image: np.ndarray, lang: str = "es") -> List[str]:
-    """Extrae texto de una imagen (numpy array) usando EasyOCR.
-
-    Args:
-        image: Imagen en formato BGR/GRAY (OpenCV numpy array).
-        lang: Código de idioma para EasyOCR (por defecto 'es').
-
-    Returns:
-        Lista de líneas de texto extraídas, ordenadas top->bottom.
+def extract_text_from_image(image: np.ndarray, lang: str = "es") -> str:
     """
-    if image is None:
-        return []
+    Extrae todo el texto de la imagen INE.
+    Devuelve el texto completo como string.
+    """
+    try:
+        reader = _get_reader(lang)
 
-    if not isinstance(image, np.ndarray):
-        raise TypeError("image debe ser un numpy.ndarray")
+        # Extraer texto sin coordenadas (solo el contenido)
+        results = reader.readtext(
+            image,
+            detail=0,  # Solo devuelve el texto sin coordenadas
+            paragraph=False,
+            contrast_ths=0.1,
+            adjust_contrast=0.5,
+            text_threshold=0.6,
+            link_threshold=0.4,
+            mag_ratio=1.5
+        )
 
-    # Convertir a RGB (EasyOCR espera imágenes en formato similar a PIL RGB)
-    img_rgb = None
-    if image.ndim == 2:
-        img_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    elif image.shape[2] == 4:
-        img_rgb = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
-    else:
-        img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # Unir todas las líneas extraídas
+        full_text = "\n".join(results)
 
-    reader = _get_reader(lang)
+        return full_text
 
-    # readtext devuelve lista de tuples: (bbox, text, confidence)
-    results = reader.readtext(img_rgb)
-
-    if not results:
-        return []
-
-    # Ordenar por coordenada vertical superior del bbox
-    results_sorted = sorted(results, key=lambda r: _bbox_top(r[0]))
-
-    texts = [r[1] for r in results_sorted]
-    return texts
+    except Exception as e:
+        print(f"Error crítico en la extracción OCR: {e}")
+        return ""

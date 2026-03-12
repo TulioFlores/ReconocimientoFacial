@@ -3,10 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import numpy as np
 import cv2
-import re
-
-from app.services.ocr_service import extract_text_from_image
-from app.utils.image_processing import preprocess_image
+from models.ine_model import TextExtractionResponse
+from services.ocr_service import extract_text_from_image
+from utils.image_processing import preprocess_image
 
 app = FastAPI(title="AutoTramite OCR Service")
 
@@ -26,8 +25,17 @@ async def health():
     return {"status": "ok"}
 
 
-@app.post("/api/v1/scan-ine")
+@app.post("/api/v1/scan-ine", response_model=TextExtractionResponse)
 async def scan_ine(file: UploadFile = File(...)):
+    """
+    Endpoint para extraer texto de una imagen de INE.
+    
+    Args:
+        file: Archivo de imagen (JPG, PNG, etc.)
+    
+    Returns:
+        TextExtractionResponse con el texto completo extraído
+    """
     if not (file.content_type and file.content_type.startswith("image/")):
         raise HTTPException(status_code=400, detail="El archivo enviado no es una imagen")
 
@@ -35,43 +43,27 @@ async def scan_ine(file: UploadFile = File(...)):
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
         if img is None:
             raise HTTPException(status_code=400, detail="No se pudo decodificar la imagen")
 
+        # 1. Preprocesamiento de imagen
         processed = preprocess_image(img)
-
-        # extract_text_from_image should return a list of strings (lines)
-        raw_text = extract_text_from_image(processed, lang="es")
-
-        joined = "\n".join(raw_text) if isinstance(raw_text, (list, tuple)) else str(raw_text)
-        upper = joined.upper()
-
-        result = {"NOMBRE": None, "CURP": None, "DOMICILIO": None}
-
-        # Buscar etiquetas explícitas
-        for line in joined.splitlines():
-            uline = line.upper()
-            if "NOMBRE" in uline and not result["NOMBRE"]:
-                result["NOMBRE"] = line.split(":", 1)[-1].strip() if ":" in line else line.strip()
-            if "CURP" in uline and not result["CURP"]:
-                m = re.search(r"[A-Z0-9]{18}", uline)
-                result["CURP"] = m.group(0) if m else (line.split(":", 1)[-1].strip() if ":" in line else line.strip())
-            if "DOMICILIO" in uline and not result["DOMICILIO"]:
-                result["DOMICILIO"] = line.split(":", 1)[-1].strip() if ":" in line else line.strip()
-
-        # Fallback: buscar CURP por patrón en todo el texto
-        if not result["CURP"]:
-            m = re.search(r"[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d", upper)
-            if m:
-                result["CURP"] = m.group(0)
-
-        return {"success": True, "data": result, "raw_text": raw_text}
+        
+        # 2. Extracción de texto
+        extracted_text = extract_text_from_image(processed, lang="es")
+        
+        # 3. Validar que se extrajo texto
+        if not extracted_text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto de la imagen")
+        
+        return {"texto_completo": extracted_text}
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error procesando la imagen: {e}")
+        raise HTTPException(status_code=500, detail=f"Error procesando la imagen: {str(e)}")
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
