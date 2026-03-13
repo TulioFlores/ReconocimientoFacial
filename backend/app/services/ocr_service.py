@@ -2,6 +2,8 @@ from typing import List
 import numpy as np
 import cv2
 import traceback
+import re
+from models.ine_model import INEResponse
 
 try:
     from paddleocr import PaddleOCR
@@ -86,3 +88,80 @@ def extract_text_from_image(image: np.ndarray, lang: str = "es") -> str:
         print(f"\n[OCR ERROR FATAL] Ocurrió un error en la extracción:")
         traceback.print_exc()
         return ""
+
+
+def parse_ine_text(raw_text: str) -> INEResponse:
+    """
+    Extrae y parsea los campos de una INE mexicana desde texto OCR crudo.
+    
+    Utiliza expresiones regulares para identificar:
+    - SEXO: H o M
+    - CURP: 18 caracteres alpanuméricos
+    - Clave de Elector: 18 caracteres alpanuméricos
+    - Fecha de Nacimiento: DD/MM/YYYY
+    - Sección: 4 dígitos
+    - Nombre completo: Dividido en apellido_paterno, apellido_materno, nombre
+    - Domicilio: Texto de dirección
+    
+    Args:
+        raw_text: Texto crudo extraído por PaddleOCR
+    
+    Returns:
+        INEResponse con los campos extraídos
+    """
+    # Limpiar espacios múltiples
+    text = " ".join(raw_text.split())
+    
+    data = {}
+    
+    # 1. SEXO: H o M después de SEXO
+    sexo_match = re.search(r'SEXO\s+([HM])', text, re.IGNORECASE)
+    data['sexo'] = sexo_match.group(1) if sexo_match else None
+    
+    # 2. CURP: 4 letras, 6 números, H/M, 5 letras, 1 alfanumérico, 1 número (18 caracteres)
+    curp_match = re.search(r'[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d', text)
+    data['curp'] = curp_match.group(0) if curp_match else None
+    
+    # 3. Clave de Elector: 6 letras, 8 números, 1 letra, 3 números (18 caracteres)
+    clave_match = re.search(r'[A-Z]{6}\d{8}[A-Z]\d{3}', text)
+    data['clave_elector'] = clave_match.group(0) if clave_match else None
+    
+    # 4. Fecha de Nacimiento: DD/MM/YYYY
+    fecha_match = re.search(r'\d{2}/\d{2}/\d{4}', text)
+    data['fecha_nacimiento'] = fecha_match.group(0) if fecha_match else None
+    
+    # 5. Sección: 4 dígitos después de SECCIÓN
+    seccion_match = re.search(r'SECCIÓN\s+(\d{4})', text, re.IGNORECASE)
+    data['seccion'] = seccion_match.group(1) if seccion_match else None
+    
+    # 6. Nombre Completo: Entre SEXO [H/M] y DOMICILIO
+    # Extrae las palabras entre sexo y domicilio
+    nombre_match = re.search(r'SEXO\s+[HM]\s+(.+?)\s+DOMICILIO', text, re.IGNORECASE)
+    if nombre_match:
+        nombre_completo = nombre_match.group(1).strip()
+        palabras = nombre_completo.split()
+        
+        # Dividir: primero y segundo par de palabras son apellidos
+        if len(palabras) >= 3:
+            data['apellido_paterno'] = palabras[0]
+            data['apellido_materno'] = palabras[1]
+            data['nombre'] = " ".join(palabras[2:])
+        elif len(palabras) == 2:
+            data['apellido_paterno'] = palabras[0]
+            data['apellido_materno'] = palabras[1]
+            data['nombre'] = None
+        elif len(palabras) == 1:
+            data['apellido_paterno'] = palabras[0]
+            data['apellido_materno'] = None
+            data['nombre'] = None
+    else:
+        data['apellido_paterno'] = None
+        data['apellido_materno'] = None
+        data['nombre'] = None
+    
+    # 7. Domicilio: Entre DOMICILIO y CLAVE DE ELECTOR
+    domicilio_match = re.search(r'DOMICILIO\s+(.+?)\s+CLAVE DE ELECTOR', text, re.IGNORECASE)
+    data['domicilio'] = domicilio_match.group(1).strip() if domicilio_match else None
+    
+    # Crear objeto INEResponse filtrando valores None
+    return INEResponse(**{k: v for k, v in data.items() if v is not None})
