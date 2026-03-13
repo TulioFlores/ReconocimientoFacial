@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 from models.ine_model import TextExtractionResponse
 from services.ocr_service import extract_text_from_image
-from utils.image_processing import preprocess_image
 
 app = FastAPI(title="AutoTramite OCR Service")
 
@@ -47,13 +46,10 @@ async def scan_ine(file: UploadFile = File(...)):
         if img is None:
             raise HTTPException(status_code=400, detail="No se pudo decodificar la imagen")
 
-        # 1. Preprocesamiento de imagen
-        processed = preprocess_image(img)
+        # Extracción de texto con PaddleOCR
+        extracted_text = extract_text_from_image(img, lang="es")
         
-        # 2. Extracción de texto
-        extracted_text = extract_text_from_image(processed, lang="es")
-        
-        # 3. Validar que se extrajo texto
+        # Validar que se extrajo texto
         if not extracted_text.strip():
             raise HTTPException(status_code=400, detail="No se pudo extraer texto de la imagen")
         

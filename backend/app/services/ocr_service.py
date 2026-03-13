@@ -1,52 +1,88 @@
 from typing import List
 import numpy as np
 import cv2
+import traceback
 
 try:
-    import easyocr
+    from paddleocr import PaddleOCR
 except Exception:
-    easyocr = None
+    PaddleOCR = None
 
-# Diccionario para reutilizar el lector y no cargar el modelo en cada petición
+# Diccionario para reutilizar el lector
 _readers = {}
 
 def _get_reader(lang: str = "es"):
     """
-    Carga el modelo de EasyOCR solo una vez (Singleton) para ahorrar RAM.
+    Carga el modelo de PaddleOCR solo una vez (Singleton) para ahorrar RAM.
     """
-    if easyocr is None:
-        raise RuntimeError("EasyOCR no instalado. Ejecuta: pip install easyocr")
+    if PaddleOCR is None:
+        raise RuntimeError("PaddleOCR no instalado. Ejecuta: pip install paddleocr")
 
     if lang not in _readers:
-        # gpu=False si no tienes tarjeta NVIDIA configurada con CUDA
-        _readers[lang] = easyocr.Reader([lang], gpu=False)
+        # Parámetros optimizados para PaddleOCR:
+        # - use_angle_cls=True: Detecta ángulos de rotación del texto
+        # - lang: español
+        # - enable_mkldnn=False: Evita crasheos de C++ en Windows
+        _readers[lang] = PaddleOCR(
+            use_angle_cls=True, 
+            lang=lang, 
+            enable_mkldnn=False
+        )
+    
     return _readers[lang]
 
 def extract_text_from_image(image: np.ndarray, lang: str = "es") -> str:
     """
-    Extrae todo el texto de la imagen INE.
-    Devuelve el texto completo como string.
+    Extrae texto de una imagen usando PaddleOCR.
+    Pasa la imagen directamente en memoria sin guardarla a disco.
     """
     try:
+        # Validar imagen
+        if image is None or image.size == 0:
+            print("\n[ERROR] La imagen llegó vacía al OCR.\n")
+            return ""
+        
+        print(f"[DEBUG] Imagen recibida. Dimensiones: {image.shape}, Tipo: {image.dtype}")
+        
+        # Obtener reader de PaddleOCR
         reader = _get_reader(lang)
-
-        # Extraer texto sin coordenadas (solo el contenido)
-        results = reader.readtext(
-            image,
-            detail=0,  # Solo devuelve el texto sin coordenadas
-            paragraph=False,
-            contrast_ths=0.1,
-            adjust_contrast=0.5,
-            text_threshold=0.6,
-            link_threshold=0.4,
-            mag_ratio=1.5
-        )
-
-        # Unir todas las líneas extraídas
-        full_text = "\n".join(results)
-
-        return full_text
+        
+        # OPCIÓN 1: Pasar directamente la imagen en memoria (sin archivo temporal)
+        # PaddleOCR puede procesar directamente arrays de numpy
+        print("[DEBUG] Procesando imagen directamente en memoria...")
+        results = reader.ocr(image)
+        
+        # Debug: mostrar estructura de resultados
+        print(f"[DEBUG] Resultados brutos de PaddleOCR: {type(results)} con {len(results) if results else 0} páginas")
+        if results and len(results) > 0:
+            print(f"[DEBUG] Primera página contiene {len(results[0])} líneas detectadas" if results[0] else "[DEBUG] Primera página vacía")
+        
+        # Extraer texto de los resultados
+        texto_completo = ""
+        if results and len(results) > 0:
+            result = results[0]
+            
+            # El resultado es un diccionario con 'rec_texts' (lista de textos) y 'rec_scores' (confianzas)
+            if hasattr(result, '__getitem__') and 'rec_texts' in result:
+                rec_texts = result.get('rec_texts', [])
+                rec_scores = result.get('rec_scores', [])
+                
+                print(f"[DEBUG] Textos detectados: {rec_texts}")
+                print(f"[DEBUG] Confianzas: {rec_scores}")
+                
+                # Concatenar todos los textos detectados
+                texto_completo = " ".join(rec_texts)
+        
+        texto_completo = texto_completo.strip()
+        
+        if texto_completo:
+            print(f"\n[OCR DEBUG] Texto extraído: {texto_completo}\n")
+        else:
+            print("\n[OCR DEBUG] No se extrajo texto de la imagen\n")
+        
+        return texto_completo
 
     except Exception as e:
-        print(f"Error crítico en la extracción OCR: {e}")
+        print(f"\n[OCR ERROR FATAL] Ocurrió un error en la extracción:")
+        traceback.print_exc()
         return ""
