@@ -1,13 +1,13 @@
 import { ScanFace, RefreshCw, Lock } from 'lucide-react';
 
-export default function ActionBar() {
+export default function ActionBar({ onConfirm }: { onConfirm: () => void }) {
   return (
     <div className="mt-6">
       {/* Contenedor Principal (Card) */}
       <div className="bg-background p-4 rounded-xl shadow-sm border border-border flex flex-col sm:flex-row justify-center items-center gap-6">
         
         {/* Botón Principal */}
-        <button className="bg-primary text-primary-foreground hover:opacity-90 px-8 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all w-full sm:w-auto justify-center">
+        <button onClick={onConfirm} className="bg-primary text-primary-foreground hover:opacity-90 px-8 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all w-full sm:w-auto justify-center">
           <ScanFace size={20} />
           Confirmar & Enrolar Biometría
         </button>

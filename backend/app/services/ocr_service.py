@@ -3,7 +3,12 @@ import numpy as np
 import cv2
 import traceback
 import re
-from models.ine_model import INEResponse
+import os
+
+# Deshabilitar verificación de conectividad de PaddleOCR ANTES de importar
+os.environ['PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK'] = 'True'
+
+from app.models.ine_model import INEResponse
 
 try:
     from paddleocr import PaddleOCR
@@ -115,8 +120,9 @@ def parse_ine_text(raw_text: str) -> INEResponse:
     data = {}
     
     # 1. SEXO: H o M después de SEXO
-    sexo_match = re.search(r'SEXO\s+([HM])', text, re.IGNORECASE)
-    data['sexo'] = sexo_match.group(1) if sexo_match else None
+    sexo_match = re.search(r'SEXO\s*([HM])', text, re.IGNORECASE)
+    if sexo_match:
+        data['sexo'] = sexo_match.group(1).upper()
     
     # 2. CURP: 4 letras, 6 números, H/M, 5 letras, 1 alfanumérico, 1 número (18 caracteres)
     curp_match = re.search(r'[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d', text)
@@ -135,8 +141,9 @@ def parse_ine_text(raw_text: str) -> INEResponse:
     data['seccion'] = seccion_match.group(1) if seccion_match else None
     
     # 6. Nombre Completo: Entre SEXO [H/M] y DOMICILIO
-    # Extrae las palabras entre sexo y domicilio
-    nombre_match = re.search(r'SEXO\s+[HM]\s+(.+?)\s+DOMICILIO', text, re.IGNORECASE)
+    # Usamos \s* en lugar de \s+ antes del [HM] por si el OCR junta "SEXOH"
+    nombre_match = re.search(r'SEXO\s*[HM]\s+(.+?)\s+DOMICILIO', text, re.IGNORECASE)
+    
     if nombre_match:
         nombre_completo = nombre_match.group(1).strip()
         palabras = nombre_completo.split()

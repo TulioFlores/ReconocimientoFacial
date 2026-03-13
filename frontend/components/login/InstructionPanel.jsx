@@ -2,16 +2,16 @@ import { CheckCircle2, Video } from 'lucide-react';
 
 export default function InstructionPanel() {
   const instructions = [
-    "Remove glasses",
-    "Look straight ahead",
-    "Ensure good lighting"
+    "Quitar gafas",
+    "Mira al frente",
+    "Asegurar una buena iluminación."
   ];
 
   return (
     <div className="h-full flex flex-col gap-6">
       {/* Panel de Instrucciones */}
       <div className="bg-background p-6 rounded-xl shadow-sm border border-border">
-        <h2 className="text-foreground font-semibold mb-4">Instructions</h2>
+        <h2 className="text-foreground font-semibold mb-4">Instrucciones</h2>
         
         <div className="space-y-3">
           {instructions.map((item, index) => (
