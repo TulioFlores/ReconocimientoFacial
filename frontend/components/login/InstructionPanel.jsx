@@ -23,7 +23,7 @@ export default function InstructionPanel() {
         </div>
       </div>
 
-      {/* Caja de Estado */}
+      {/* Caja de Estado 
       <div className="bg-primary/5 border border-primary/20 p-6 rounded-xl flex items-start gap-4">
         <div className="bg-primary/10 p-2 rounded-lg text-primary mt-1">
             <Video size={20} />
@@ -32,7 +32,7 @@ export default function InstructionPanel() {
             <h3 className="text-primary font-semibold text-sm">Status</h3>
             <p className="text-primary/80 text-sm mt-1">Face detected - Ready to proceed</p>
         </div>
-      </div>
+      </div>*/}
     </div>
   );
 }

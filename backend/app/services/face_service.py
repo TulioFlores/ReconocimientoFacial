@@ -122,6 +122,9 @@ def compare_facial_encodings(
     
     # Validar dimensiones
     if len(encoding1) != 128 or len(encoding2) != 128:
+        print(f"[COMPARE DEBUG] Error: dimensiones incorrectas")
+        print(f"[COMPARE DEBUG]   - encoding1 longitud: {len(encoding1)}")
+        print(f"[COMPARE DEBUG]   - encoding2 longitud: {len(encoding2)}")
         raise ValueError(
             f"Los encoding deben tener exactamente 128 dimensiones. "
             f"Obtenido: {len(encoding1)} y {len(encoding2)}"
@@ -131,8 +134,14 @@ def compare_facial_encodings(
     enc1 = np.array(encoding1) if isinstance(encoding1, list) else encoding1
     enc2 = np.array(encoding2) if isinstance(encoding2, list) else encoding2
     
+    print(f"[COMPARE DEBUG] Comparando vectores:")
+    print(f"[COMPARE DEBUG]   - enc1 tipo: {type(enc1)}, dtype: {enc1.dtype if hasattr(enc1, 'dtype') else 'N/A'}")
+    print(f"[COMPARE DEBUG]   - enc2 tipo: {type(enc2)}, dtype: {enc2.dtype if hasattr(enc2, 'dtype') else 'N/A'}")
+    
     # Calcular distancia euclidiana
     distance = face_recognition.face_distance([enc1], enc2)[0]
+    
+    print(f"[COMPARE DEBUG] Distancia calculada: {float(distance):.6f}")
     
     return float(distance)
 

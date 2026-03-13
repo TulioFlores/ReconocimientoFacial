@@ -102,7 +102,7 @@ function App() {
             extractedData={{
               fullName: fullName || 'Nombre no detectado',
               curp: extractedData?.curp || 'CURP no detectado',
-              seccion: extractedData?.seccion || 'Sección no detectada'
+              fecha_nacimiento: extractedData?.fecha_nacimiento || 'Fecha de nacimiento no detectada'
             }} 
             isLoading={isSubmitting} 
             onSubmit={handleFinalSubmit} 

@@ -1,17 +1,17 @@
 'use client'
 import { useState } from 'react';
-import { Mail, User, Fingerprint, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, User, Fingerprint, Calendar, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface FormularioConfirmacionProps {
   // Datos extraídos previamente por tu OCR
   extractedData: {
     fullName: string;
     curp: string;
-    seccion: string;
+    fecha_nacimiento: string;
   };
   isLoading: boolean;
   // Función que se ejecutará al hacer clic en guardar
-  onSubmit: (email: string) => void; 
+  onSubmit: (email: string) => void;
 }
 
 export default function FormularioConfirmacion({ extractedData, isLoading, onSubmit }: FormularioConfirmacionProps) {
@@ -20,7 +20,7 @@ export default function FormularioConfirmacion({ extractedData, isLoading, onSub
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validación súper rápida del formato del correo
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -63,10 +63,13 @@ export default function FormularioConfirmacion({ extractedData, isLoading, onSub
         </div>
 
         <div className="flex items-start gap-3">
-          <MapPin className="text-muted-foreground mt-0.5" size={18} />
+          {/* Cambiamos MapPin por Calendar para que sea acorde a una fecha */}
+          <Calendar className="text-muted-foreground mt-0.5" size={18} />
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Sección Electoral</p>
-            <p className="text-sm font-semibold text-foreground">{extractedData.seccion}</p>
+            <p className="text-xs text-muted-foreground font-medium">Fecha de Nacimiento</p>
+            <p className="text-sm font-semibold text-foreground">
+              {extractedData.fecha_nacimiento || "No detectada"}
+            </p>
           </div>
         </div>
       </div>
@@ -85,9 +88,8 @@ export default function FormularioConfirmacion({ extractedData, isLoading, onSub
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tulio@ejemplo.com"
             disabled={isLoading}
-            className={`w-full p-3 rounded-lg border bg-background text-foreground text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:opacity-50 ${
-              emailError ? 'border-destructive focus:border-destructive' : 'border-border focus:border-primary'
-            }`}
+            className={`w-full p-3 rounded-lg border bg-background text-foreground text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:opacity-50 ${emailError ? 'border-destructive focus:border-destructive' : 'border-border focus:border-primary'
+              }`}
           />
           {emailError && (
             <p className="text-xs text-destructive mt-1">{emailError}</p>

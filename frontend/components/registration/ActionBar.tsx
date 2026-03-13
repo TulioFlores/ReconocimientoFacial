@@ -9,7 +9,7 @@ export default function ActionBar({ onConfirm }: { onConfirm: () => void }) {
         {/* Botón Principal */}
         <button onClick={onConfirm} className="bg-primary text-primary-foreground hover:opacity-90 px-8 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all w-full sm:w-auto justify-center">
           <ScanFace size={20} />
-          Confirmar & Enrolar Biometría
+          Confirmar datos
         </button>
 
         {/* Botón Secundario */}

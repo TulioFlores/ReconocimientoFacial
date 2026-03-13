@@ -1,25 +1,75 @@
 'use client'
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CameraZone from '../../components/login/CameraZone';
 import BiometricActions from '../../components/login/BiometricActions';
-import { Lock } from 'lucide-react';
+import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { saveUserCookie } from '../../utils/cookieUtils';
 
 export default function LoginPage() {
   const [isVerifying, setIsVerifying] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
+  const router = useRouter();
 
-  // Esta función atrapa el vector de la cámara directamente en el Login
+  // Esta función atrapa el vector de la cámara y lo envía al endpoint de login
   const handleLoginVector = async (vector: number[]) => {
     setIsVerifying(true);
+    setMessage({ type: null, text: '' });
+    
     console.log("Vector de Login capturado:", vector.length, "dimensiones");
     
-    // TODO: Aquí mandaremos el vector a FastAPI para que busque quién eres en Supabase
-    // const response = await fetch('http://localhost:8000/api/v1/login', { ... })
-    
-    // Simulamos la carga por ahora
-    setTimeout(() => {
+    try {
+      // Enviamos el vector al endpoint /login/verify
+      const response = await fetch('http://localhost:8000/login/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          vector_facial: vector
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login exitoso
+        console.log("Login exitoso:", data);
+        setMessage({
+          type: 'success',
+          text: `¡Bienvenido ${data.full_name}! Confianza: ${(data.confidence * 100).toFixed(1)}%`
+        });
+        
+        // Guardar información del usuario en cookie
+        saveUserCookie({
+          user_id: data.user_id,
+          full_name: data.full_name,
+          curp: data.curp,
+          email: data.email,
+          confidence: data.confidence
+        });
+        
+        // Redirigir al dashboard después de 1.5 segundos
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1500);
+      } else {
+        // Error en el login
+        console.error("Error en login:", data);
+        setMessage({
+          type: 'error',
+          text: data.detail || 'Error al intentar hacer login. Por favor intente de nuevo.'
+        });
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      setMessage({
+        type: 'error',
+        text: 'Error de conexión con el servidor. Asegúrese que está disponible.'
+      });
+    } finally {
       setIsVerifying(false);
-      alert("¡Vector capturado! Listo para comparar con la base de datos.");
-    }, 1500);
+    }
   };
 
   return (
@@ -36,6 +86,22 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Mensaje de estado (éxito o error) */}
+        {message.type && (
+          <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+            message.type === 'success' 
+              ? 'bg-green-100 text-green-800 border border-green-300' 
+              : 'bg-red-100 text-red-800 border border-red-300'
+          }`}>
+            {message.type === 'success' ? (
+              <CheckCircle size={20} className="flex-shrink-0" />
+            ) : (
+              <AlertCircle size={20} className="flex-shrink-0" />
+            )}
+            <p className="text-sm font-medium">{message.text}</p>
+          </div>
+        )}
+
         {/* Contenedor central para la cámara y los botones */}
         <div className="flex flex-col items-center gap-6">
           
@@ -48,6 +114,16 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             <BiometricActions />
           </div>
+
+          {/* Indicador de verificación */}
+          {isVerifying && (
+            <div className="w-full max-w-md text-center">
+              <div className="flex justify-center mb-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+              <p className="text-sm text-blue-600 font-medium">Verificando identidad...</p>
+            </div>
+          )}
 
         </div>
 

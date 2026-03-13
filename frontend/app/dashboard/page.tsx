@@ -1,8 +1,16 @@
+'use client'
 import { FileText, CreditCard } from 'lucide-react'; // Iconos para las tarjetas
+import { useRouter } from 'next/navigation';
 import UserProfileCard from '../../components/dashboard/UserProfileCard';
 import ServiceCard from '../../components/dashboard/ServiceCard';
 
-function DashboardPage() {
+export default function DashboardPage() {
+  const router = useRouter();
+
+  const handleGenerateGobIDCertificate = () => {
+    router.push('/document?type=gobid-certificate');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
 
@@ -20,31 +28,40 @@ function DashboardPage() {
           <div className="lg:col-span-8">
             
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">Procedures Catalog</h1>
-              <p className="text-gray-500">Access and manage your government services</p>
+              <h1 className="text-2xl font-bold text-gray-800">Catalogo de tramites</h1>
+              <p className="text-gray-500">Acceda y gestione sus servicios gubernamentales</p>
             </div>
 
             {/* Grid interno para las tarjetas de servicios */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* Tarjeta 1: Academic (Botón Negro) */}
+              {/* Tarjeta 1: GobID Certificate */}
               <ServiceCard 
                 icon={FileText}
-                title="Academic Certificate"
-                description="Request an official PDF copy of your academic records and certifications for professional or educational purposes."
-                buttonText="Request PDF"
-                variant="primary" 
+                title="Certificado registro en GobID"
+                description="Obten un certificado de que usted se registro exitosamente en nuestra plataforma."
+                buttonText="Generar PDF"
+                variant="primary"
+                onClick={handleGenerateGobIDCertificate}
               />
 
-              {/* Tarjeta 2: Library (Botón Blanco) */}
+              {/* Tarjeta 2: CURP */}
               <ServiceCard 
-                icon={CreditCard}
-                title="Library Credential"
-                description="Register and obtain your national library access credential to enjoy digital and physical library services."
-                buttonText="Register"
-                variant="secondary"
+                icon={FileText}
+                title="CURP"
+                description="Genera una una copia oficial de el documento CURP."
+                buttonText="Generar"
+                variant="primary"
               />
-
+              
+              {/* Tarjeta 3: Constancia fiscal */}
+              <ServiceCard 
+                icon={FileText}
+                title="Constancia de situacion fiscal"
+                description="Genera una constancia de situacion fiscal"
+                buttonText="Generar"
+                variant="primary"
+              />
             </div>
           </div>
 
@@ -53,5 +70,3 @@ function DashboardPage() {
     </div>
   );
 }
-
-export default DashboardPage;

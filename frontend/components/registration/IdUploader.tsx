@@ -64,7 +64,7 @@ const [file, setFile] = useState<File | null>(null);
 
   return (
     <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full max-w-2xl mx-auto">
-      <h2 className="text-foreground font-semibold mb-6 text-xl">ID Scanning Zone</h2>
+      <h2 className="text-foreground font-semibold mb-6 text-xl">Zona de escaneo de INE</h2>
       
       {/* Zona de carga (Clickable) */}
       <div 
@@ -89,8 +89,8 @@ const [file, setFile] = useState<File | null>(null);
               <Camera size={40} />
             </div>
             <div className="text-center z-10">
-              <p className="font-medium text-foreground">Upload or Scan your INE/ID</p>
-              <p className="text-sm text-muted-foreground mt-1">Drag and drop or click to browse</p>
+              <p className="font-medium text-foreground">Sube una foto de tu INE</p>
+              <p className="text-sm text-muted-foreground mt-1">Arrastre y suelte o haga clic para explorar</p>
             </div>
           </>
         )}
@@ -108,7 +108,7 @@ const [file, setFile] = useState<File | null>(null);
           ) : file ? (
             <><CheckCircle2 size={18} /> Procesar INE</>
           ) : (
-            <><UploadCloud size={18} /> Choose File</>
+            <><UploadCloud size={18} />Elige un archivo</>
           )}
         </button>
       </div>
