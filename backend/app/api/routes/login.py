@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from app.models.schemas import LoginRequest, LoginResponse, LoginErrorResponse, LoginVectorRequest
 from app.services.face_service import extract_facial_encoding, compare_facial_encodings
 from app.db.user_repository import get_all_embeddings
@@ -7,97 +7,9 @@ from app.utils.image_utils import decode_base64_to_opencv
 # Creamos un router específico para todo lo relacionado con login
 router = APIRouter()
 
-@router.post("/login", response_model=LoginResponse)
-async def login_user(payload: LoginRequest):
-    """
-    Endpoint para hacer login usando reconocimiento facial.
-    
-    Compara el vector facial de la imagen enviada con todos los vectores almacenados
-    en la base de datos y retorna el usuario con la mejor coincidencia si la 
-    confianza es suficiente.
-    
-    Args:
-        payload: LoginRequest con la imagen del rostro en base64
-        
-    Returns:
-        LoginResponse con información del usuario autenticado
-        
-    Raises:
-        HTTPException 401: Si no se encontró coincidencia
-        HTTPException 400: Si hay problemas con la imagen
-        HTTPException 500: Si hay error en la base de datos
-    """
-    try:
-        # 1. Decodificar imagen de base64 a formato OpenCV
-        image = decode_base64_to_opencv(payload.foto_rostro)
-        
-        # 2. Extraer vector facial de la imagen
-        login_vector = extract_facial_encoding(image)
-        
-        # 3. Obtener todos los embeddings de la base de datos
-        all_embeddings = get_all_embeddings()
-        
-        if not all_embeddings:
-            raise HTTPException(
-                status_code=401, 
-                detail="No hay usuarios registrados en el sistema"
-            )
-        
-        # 4. Comparar con todos los embeddings y encontrar la mejor coincidencia
-        best_match = None
-        best_distance = float('inf')
-        
-        for embedding_record in all_embeddings:
-            # Extraer el vector guardado de la base de datos
-            stored_vector = embedding_record.get('embedding', [])
-            
-            # Validar que el vector tenga 128 dimensiones
-            if len(stored_vector) != 128:
-                continue
-            
-            # Calcular distancia euclidiana
-            distance = compare_facial_encodings(login_vector, stored_vector)
-            
-            # Mantener track de la mejor coincidencia
-            if distance < best_distance:
-                best_distance = distance
-                best_match = embedding_record
-        
-        # 5. Validar si hay coincidencia válida (tolerancia por defecto 0.6)
-        if best_match is None or best_distance >= 0.6:
-            raise HTTPException(
-                status_code=401,
-                detail="No se encontró coincidencia. Rostro no reconocido en el sistema."
-            )
-        
-        # 6. Calcular nivel de confianza (invertir la distancia)
-        # Distancia 0.0 = 100% confianza, Distancia 0.6 = ~0% confianza
-        confidence = max(0.0, 1.0 - (best_distance / 0.6))
-        
-        # 7. Retornar información del usuario
-        return LoginResponse(
-            status="success",
-            message=f"Bienvenido {best_match['full_name']}",
-            user_id=best_match['user_id'],
-            full_name=best_match['full_name'],
-            curp=best_match['curp'],
-            email=best_match['email'],
-            confidence=confidence
-        )
-    
-    except HTTPException:
-        raise  # Dejamos pasar los errores HTTP controlados
-    
-    except ValueError as e:
-        # Errores en el procesamiento de la imagen o vector
-        raise HTTPException(status_code=400, detail=f"Error en la imagen: {str(e)}")
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
-
 
 @router.post("/login/verify", response_model=LoginResponse)
-async def verify_login_with_vector(payload: LoginVectorRequest):
+async def verify_login_with_vector(payload: LoginVectorRequest, response: Response):
     """
     Endpoint para hacer login usando un vector facial pre-extraído.
     
@@ -194,6 +106,16 @@ async def verify_login_with_vector(payload: LoginVectorRequest):
         confidence = max(0.0, 1.0 - (best_distance / 0.6))
         print(f"[LOGIN DEBUG] Confianza calculada: {confidence:.2%}")
         print(f"[LOGIN DEBUG] --- Fin de verificación de login ---\n")
+        
+        # Establecer cookie de sesión
+        response.set_cookie(
+            key="user_session",
+            value=best_match['user_id'],
+            httponly=True,  # No accesible por JavaScript (mayor seguridad)
+            max_age=86400,  # 24 horas
+            samesite="lax",
+            secure=False    # Cambiar a True en producción con HTTPS
+        )
         
         # 6. Retornar información del usuario
         return LoginResponse(

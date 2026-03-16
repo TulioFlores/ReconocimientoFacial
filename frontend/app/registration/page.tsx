@@ -122,20 +122,25 @@ function App() {
           <p className="text-gray-500 mt-1">Sube tu identificación oficial y verifica tu información</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <section>
-            <IdUploader onDataExtracted={setExtractedData}/>
-          </section>
+        {/* 
+          Si no hay datos extraídos, muestra solo el cargador de INE centrado.
+          Cuando se extraen los datos, muestra el cargador a la izquierda y el formulario a la derecha.
+        */}
+        {extractedData ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <IdUploader onDataExtracted={setExtractedData} />
+            <ValidationForm data={extractedData} />
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <IdUploader onDataExtracted={setExtractedData} />
+          </div>
+        )}
 
-          <section>
-            <ValidationForm data={extractedData}/>
-          </section>
-        </div>
-
-        {/* El botón de confirmar ahora nos manda al paso de la biometría */}
-        <ActionBar onConfirm={() => setCurrentStep('biometria')} />
-        
-        {/* NOTA: ¡Quitamos el FormularioConfirmacion de aquí! Ya está protegido en el Acto 3 */}
+        {/* La barra de acciones solo se muestra si los datos de la INE ya fueron validados */}
+        {extractedData && (
+          <ActionBar onConfirm={() => setCurrentStep('biometria')} />
+        )}
       </main>
     </div>
   );

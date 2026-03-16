@@ -1,17 +1,16 @@
 import InputField from '../InputField';
-import { IneData } from '../../app/registration/page'; // Verifica bien esta ruta
+import { IneData } from '../../app/registration/page';
 
-export default function ValidationForm({ data }: { data: IneData | null }) {
+export default function ValidationForm({ data }: { data: IneData }) {
   
-  // Preparamos todos los datos, si no hay data mostramos un string vacío
+  // Prepara los datos para mostrarlos, usando un string vacío como fallback si una propiedad no existe.
   const displayData = {
-    fullName: data ? `${data.nombre || ''} ${data.apellido_paterno || ''} ${data.apellido_materno || ''}`.trim() : "",
-    curp: data?.curp || "",
-    address: data?.domicilio || "",
-    electoralKey: data?.clave_elector || "",
-    sex: data?.sexo || "",
-    birthDate: data?.fecha_nacimiento || "",
-    section: data?.seccion || ""
+    fullName: `${data.nombre || ''} ${data.apellido_paterno || ''} ${data.apellido_materno || ''}`.trim(),
+    curp: data.curp || "",
+    address: data.domicilio || "",
+    electoralKey: data.clave_elector || "",
+    sex: data.sexo || "",
+    birthDate: data.fecha_nacimiento || ""
   };
 
   return (

@@ -1,28 +1,16 @@
-"use client"; // Asegúrate de tener esto si usas Next.js App Router
+"use client";
 
 import { useState, useRef } from 'react';
 import { Camera, UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
-
-// Definimos la estructura de lo que esperamos recibir del backend
-interface IneData {
-  nombre?: string;
-  apellido_paterno?: string;
-  apellido_materno?: string;
-  curp?: string;
-  clave_elector?: string;
-  sexo?: string;
-  fecha_nacimiento?: string;
-  domicilio?: string;
-  seccion?: string;
-}
+import { IneData } from '../../app/registration/page';
 
 export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data: IneData) => void }) {
-const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [isSuccess, setIsSuccess] = useState(false);
   const handleDivClick = () => fileInputRef.current?.click();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +19,7 @@ const [file, setFile] = useState<File | null>(null);
       setFile(selectedFile);
       setPreview(URL.createObjectURL(selectedFile));
       setError(null);
+      setIsSuccess(false);
     }
   };
 
@@ -51,10 +40,9 @@ const [file, setFile] = useState<File | null>(null);
       if (!response.ok) throw new Error("Error al analizar la credencial");
 
       const data = await response.json();
-      
-      // ¡AQUÍ ESTÁ LA MAGIA! Mandamos los datos al componente Padre
+
       onDataExtracted(data); 
-      
+      setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || "Error de conexión");
     } finally {
@@ -63,13 +51,19 @@ const [file, setFile] = useState<File | null>(null);
   };
 
   return (
-    <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full max-w-2xl mx-auto">
+    // CAMBIO 1: Se quitó max-w-2xl mx-auto y se agregó w-full flex flex-col para igualar a ValidationForm
+    <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full w-full flex flex-col">
       <h2 className="text-foreground font-semibold mb-6 text-xl">Zona de escaneo de INE</h2>
       
-      {/* Zona de carga (Clickable) */}
+      {/* CAMBIO 2: flex-grow y min-h para que tome el alto restante si está junto al otro formulario */}
       <div 
-        onClick={handleDivClick}
-        className="border-2 border-dashed border-border/60 rounded-xl bg-muted/30 h-80 flex flex-col items-center justify-center gap-4 hover:bg-primary/5 transition-colors cursor-pointer relative overflow-hidden"
+        onClick={(!loading && !isSuccess) ? handleDivClick : undefined}
+        className={`flex-grow border-2 border-dashed rounded-xl bg-muted/30 min-h-[320px] flex flex-col items-center justify-center gap-4 relative overflow-hidden transition-colors
+          ${(!loading && !isSuccess) 
+            ? "border-border/60 hover:bg-primary/5 cursor-pointer" // Estado normal/clickeable
+            : "border-border/30 opacity-70 cursor-default" // Estado bloqueado (cargando o éxito)
+          }
+        `}
       >
         {/* Input oculto */}
         <input 
@@ -78,6 +72,7 @@ const [file, setFile] = useState<File | null>(null);
           onChange={handleFileChange} 
           accept="image/*" 
           className="hidden" 
+          disabled={loading || isSuccess}
         />
 
         {preview ? (
@@ -88,7 +83,7 @@ const [file, setFile] = useState<File | null>(null);
             <div className="bg-primary/10 p-4 rounded-full text-primary">
               <Camera size={40} />
             </div>
-            <div className="text-center z-10">
+            <div className="text-center z-10 px-4">
               <p className="font-medium text-foreground">Sube una foto de tu INE</p>
               <p className="text-sm text-muted-foreground mt-1">Arrastre y suelte o haga clic para explorar</p>
             </div>
@@ -100,15 +95,22 @@ const [file, setFile] = useState<File | null>(null);
       <div className="mt-6 flex justify-center">
         <button 
           onClick={file ? handleUpload : handleDivClick}
-          disabled={loading}
-          className="bg-primary text-primary-foreground hover:opacity-90 px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading || isSuccess} // <-- Se deshabilita si está cargando O si ya tuvo éxito
+          className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all shadow-md disabled:cursor-not-allowed
+            ${isSuccess 
+              ? "bg-green-600 text-white disabled:opacity-100" // Estilo de éxito (verde)
+              : "bg-primary text-primary-foreground hover:opacity-90 shadow-primary/20 disabled:opacity-50" // Estilo normal
+            }
+          `}
         >
           {loading ? (
             <><Loader2 size={18} className="animate-spin" /> Analizando...</>
+          ) : isSuccess ? (
+            <><CheckCircle2 size={18} /> ¡Analizado con éxito!</> // <-- Mensaje de éxito
           ) : file ? (
             <><CheckCircle2 size={18} /> Procesar INE</>
           ) : (
-            <><UploadCloud size={18} />Elige un archivo</>
+            <><UploadCloud size={18} /> Elige un archivo</>
           )}
         </button>
       </div>

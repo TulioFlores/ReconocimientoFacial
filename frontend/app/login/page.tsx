@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import CameraZone from '../../components/login/CameraZone';
 import BiometricActions from '../../components/login/BiometricActions';
 import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
-import { saveUserCookie } from '../../utils/cookieUtils';
 
 export default function LoginPage() {
   const [isVerifying, setIsVerifying] = useState(false);
@@ -25,6 +24,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // Importante para recibir y guardar la cookie
         body: JSON.stringify({
           vector_facial: vector
         })
@@ -38,15 +38,6 @@ export default function LoginPage() {
         setMessage({
           type: 'success',
           text: `¡Bienvenido ${data.full_name}! Confianza: ${(data.confidence * 100).toFixed(1)}%`
-        });
-        
-        // Guardar información del usuario en cookie
-        saveUserCookie({
-          user_id: data.user_id,
-          full_name: data.full_name,
-          curp: data.curp,
-          email: data.email,
-          confidence: data.confidence
         });
         
         // Redirigir al dashboard después de 1.5 segundos
