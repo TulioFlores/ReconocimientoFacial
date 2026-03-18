@@ -30,10 +30,13 @@ def _get_reader(lang: str = "es"):
         # - use_angle_cls=True: Detecta ángulos de rotación del texto
         # - lang: español
         # - enable_mkldnn=False: Evita crasheos de C++ en Windows
-        _readers[lang] = PaddleOCR(
-            use_angle_cls=True, 
-            lang=lang, 
-            enable_mkldnn=False
+        _readers[lang] = PaddleOCR( 
+            lang=lang,               # <-- 1. Asegurar explícitamente el uso de CPU
+            enable_mkldnn=False,          # <-- 2. Aceleración matemática (Si crashea en Windows, ponlo en False)
+            cpu_threads=6,               # <-- 3. Asignar los hilos de tu Ryzen 5 (tiene 12 hilos, 6 es ideal)
+            use_angle_cls=False,
+            det_limit_side_len=760,      # <-- 4. ¡CRÍTICO! Limita la resolución interna para la detección
+            ocr_version='PP-OCRv3'
         )
     
     return _readers[lang]
@@ -51,6 +54,20 @@ def extract_text_from_image(image: np.ndarray, lang: str = "es") -> str:
         
         print(f"[DEBUG] Imagen recibida. Dimensiones: {image.shape}, Tipo: {image.dtype}")
         
+        # --- NUEVO: REDIMENSIONAR IMAGEN ANTES DEL OCR ---
+        # Si la imagen es más grande de 1200 píxeles, la achicamos manteniendo la proporción
+        max_dimension = 1200
+        alto, ancho = image.shape[:2]
+
+        if max(alto, ancho) > max_dimension:
+            escala = max_dimension / float(max(alto, ancho))
+            nuevo_alto = int(alto * escala)
+            nuevo_ancho = int(ancho * escala)
+            # Sobrescribimos la variable 'image' con la versión pequeña
+            image = cv2.resize(image, (nuevo_ancho, nuevo_alto), interpolation=cv2.INTER_AREA)
+            print(f"[DEBUG] Imagen redimensionada a: {image.shape} para acelerar procesamiento")
+        # -------------------------------------------------
+
         # Obtener reader de PaddleOCR
         reader = _get_reader(lang)
         
