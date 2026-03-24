@@ -15,7 +15,7 @@ export default function ActionBar({ onConfirm }: { onConfirm: () => void }) {
         {/* Botón Secundario */}
         <button className="text-muted-foreground hover:text-foreground font-medium flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-lg transition-colors">
           <RefreshCw size={18} />
-          Volver a tomar foto
+          Subir otra foto
         </button>
 
       </div>

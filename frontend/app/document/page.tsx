@@ -3,8 +3,6 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Download, Home, FileText, Loader } from 'lucide-react';
-import { generateGobIDCertificatePDF, downloadPDF } from '@/utils/pdfGenerator';
-import { getUserCookie, UserData } from '@/utils/cookieUtils';
 
 export default function DocumentPage() {
   const searchParams = useSearchParams();
