@@ -9,7 +9,7 @@ from app.models.schemas import BiometricEnrollResponse, VectorExtractionResponse
 from app.services.ocr_service import extract_text_from_image, parse_ine_text
 from app.services.face_service import extract_facial_encoding
 from app.utils.image_utils import validate_image_format
-from app.api.routes import enrollment, login
+from app.api.routes import enrollment, login, user_session
 app = FastAPI(title="AutoTramite OCR Service")
 
 origins = ["http://localhost:3000"]
@@ -23,6 +23,7 @@ app.add_middleware(
 )
 app.include_router(enrollment.router)
 app.include_router(login.router)
+app.include_router(user_session.router)
 @app.get("/health")
 async def health():
     return {"status": "ok"}

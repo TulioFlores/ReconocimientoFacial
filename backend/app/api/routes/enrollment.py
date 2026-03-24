@@ -11,13 +11,20 @@ async def enroll_user(payload: EnrollmentRequest):
     Endpoint para registrar un usuario nuevo con su biometría.
     """
     try:
-        # Lógica de negocio sencilla: unir el nombre
-        full_name = f"{payload.nombre} {payload.apellido_paterno} {payload.apellido_materno}".strip()
-        full_name = " ".join(full_name.split()) # Limpiar espacios extra
+        # Lógica de negocio sencilla: limpiar espacios extra por separado
+        nombres_limpios = " ".join(payload.nombre.strip().split())
+        paterno_limpio = " ".join(payload.apellido_paterno.strip().split())
         
-        # Llamar a la capa de base de datos
+        # El materno a veces no existe en algunas personas, lo manejamos seguro
+        materno_limpio = ""
+        if payload.apellido_materno:
+            materno_limpio = " ".join(payload.apellido_materno.strip().split())
+        
+        # Llamar a la capa de base de datos pasando los campos separados
         resultado = create_user_with_biometrics(
-            full_name=full_name,
+            nombre=nombres_limpios,
+            primer_apellido=paterno_limpio,
+            segundo_apellido=materno_limpio,
             curp=payload.curp,
             email=payload.email,
             facial_vector=payload.vector_facial
