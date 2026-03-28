@@ -127,7 +127,8 @@ def get_all_embeddings() -> list[dict[str, Any]]:
 
 def get_user_profile(user_id: str) -> dict:
     """
-    Busca a un usuario por su ID en la base de datos y formatea su perfil.
+    Busca a un usuario por su ID en la base de datos, formatea su perfil
+    y adjunta sus datos fiscales si los tiene.
     """
     try:
         # 1. Buscar en la tabla users_metadata
@@ -138,18 +139,30 @@ def get_user_profile(user_id: str) -> dict:
             
         user_data = user_response.data[0]
         
-        # 2. Revisar si tiene datos en la tabla fiscal_data
-        # (Si aún no creas esta tabla en Supabase, esto podría dar error, 
-        # por eso lo envolvemos en un try/except pequeñito)
+        # 2. Extraer datos de fiscal_data y domicilios
         has_fiscal_data = False
+        fiscal_info = {}
+        domicilio_info = {}
+        
         try:
-            fiscal_response = supabase.table("fiscal_data").select("id").eq("user_id", user_id).execute()
+            # ¡AQUÍ ESTÁ EL TRUCO! Cambiamos select("id") por select("*")
+            fiscal_response = supabase.table("fiscal_data").select("*").eq("user_id", user_id).execute()
+            dom_response = supabase.table("domicilios").select("*").eq("user_id", user_id).execute()
+            
             if fiscal_response.data and len(fiscal_response.data) > 0:
+                fiscal_info = fiscal_response.data[0]
+                
+            if dom_response.data and len(dom_response.data) > 0:
+                domicilio_info = dom_response.data[0]
+                
+            # Si ambas tablas trajeron datos, marcamos que está completo
+            if fiscal_info and domicilio_info:
                 has_fiscal_data = True
+                
         except Exception as e:
-            print(f"[DB WARNING] No se pudo verificar fiscal_data (¿quizá no existe la tabla?): {e}")
+            print(f"[DB WARNING] No se pudo verificar o extraer datos fiscales: {e}")
 
-        # 3. Reconstruir el nombre completo con las columnas nuevas
+        # 3. Reconstruir el nombre completo
         nombre = user_data.get('nombre', '')
         apellido1 = user_data.get('primer_apellido', '')
         apellido2 = user_data.get('segundo_apellido', '')
@@ -157,14 +170,21 @@ def get_user_profile(user_id: str) -> dict:
         partes_nombre = [nombre, apellido1, apellido2]
         full_name = " ".join([p for p in partes_nombre if p]).strip()
         
-        # 4. Retornar el diccionario listo para el frontend
-        return {
+        # 4. Construir el diccionario base
+        profile = {
             "user_id": user_id,
             "full_name": full_name,
             "curp": user_data.get('curp', ''),
             "email": user_data.get('email', ''),
             "has_fiscal_data": has_fiscal_data
         }
+        
+        # 5. Si tiene datos fiscales, los fusionamos con el perfil principal
+        if has_fiscal_data:
+            profile.update(fiscal_info)
+            profile.update(domicilio_info)
+            
+        return profile
         
     except Exception as e:
         print(f"[DB ERROR] Error al obtener perfil de usuario: {str(e)}")

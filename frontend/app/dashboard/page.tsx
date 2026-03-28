@@ -53,13 +53,11 @@ const router = useRouter();
     router.push('/document?type=gobid-certificate');
   };
 
-  const handleGenerateClick = () => {
-    // Ahora leemos la variable directamente del estado userData
-    if (userData?.has_fiscal_data) {
-      alert("Generando constancia... ¡Sin fricción!");
-    } else {
-      setIsSlideOverOpen(true);
-    }
+  const handleGenerateConstanciaFiscal = () => {
+    router.push('/document?type=constancia-fiscal');
+  };
+  const handleGenerateCurp = () => {
+    router.push('/document?type=curp');
   };
 
   // Mostrar un loader mientras verifica la sesión
@@ -104,6 +102,7 @@ const router = useRouter();
                 description="Genera una una copia oficial del documento CURP."
                 buttonText="Generar"
                 variant="primary"
+                onClick={handleGenerateCurp}
               />
 
               {/* Tarjeta 3: Constancia fiscal */}
@@ -113,7 +112,7 @@ const router = useRouter();
                 description="Genera una constancia de situacion fiscal"
                 buttonText="Generar"
                 variant="primary"
-                onClick={handleGenerateClick}
+                onClick={handleGenerateConstanciaFiscal}
               />
               <SlideOver
                 isOpen={isSlideOverOpen}
@@ -121,16 +120,14 @@ const router = useRouter();
                 title="Completa tu Perfil Fiscal"
                 
               >
-                {/* <FiscalForm
+                <FiscalForm
                   initialCurp={userData.curp}
-                  initialCp={ocrCp}
-                  initialAddress={ocrAddress}
+                  initialCp={userData.ocrCp}
+                  initialAddress={userData.ocrAddress}
                   onSubmitSuccess={() => {
                     setIsSlideOverOpen(false);
-                    // Aquí puedes lanzar un toast de éxito y empezar la generación
-                    alert("¡Datos guardados! Generando constancia...");
                   }}
-                /> */}
+                />
               </SlideOver>
             </div>
           </div>

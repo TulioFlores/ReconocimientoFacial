@@ -3,12 +3,14 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Download, Home, FileText, Loader } from 'lucide-react';
+import {generateConstanciaFiscalPDF, generateGobIDCertificatePDF, downloadPDF, generateCurpPDF} from '@/utils/pdfGenerator'
 
 export default function DocumentPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const documentType = searchParams.get('type');
 
+  // Asegúrate de que tu interface UserData incluya los campos que trae el /me
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
@@ -22,26 +24,57 @@ export default function DocumentPage() {
         setIsLoading(true);
         setError(null);
 
-        // 1. Obtener datos del usuario de la cookie
-        const user = getUserCookie();
-        if (!user) {
+        // 1. Obtener datos del usuario desde el backend usando la cookie
+        const response = await fetch('http://localhost:8000/me', { // Ajusta tu URL base si es diferente
+          method: 'GET',
+          credentials: 'include', // Súper importante para que envíe la sesión
+        });
+
+        // Manejamos si no hay sesión (401 Unauthorized)
+        if (response.status === 401) {
           setError('No hay sesión activa. Por favor, inicia sesión nuevamente.');
           setIsLoading(false);
           setTimeout(() => router.push('/login'), 2000);
           return;
         }
 
+        if (!response.ok) {
+          throw new Error('No se pudo obtener el perfil del usuario');
+        }
+
+        const user = await response.json();
         setUserData(user);
 
         // 2. Generar el PDF según el tipo
         if (documentType === 'gobid-certificate') {
           setIsGenerating(true);
-          const blob = await generateGobIDCertificatePDF(user);
+          // Le pasamos el objeto user que acabamos de recibir de la base de datos
+          const blob = await generateGobIDCertificatePDF(user); 
           setPdfBlob(blob);
           setIsGenerating(false);
-        } else {
+        } 
+        // Aquí puedes agregar la condición para tu nueva constancia fiscal
+        else if (documentType === 'constancia-fiscal') {
+          if (!user.has_fiscal_data) {
+             // Si de casualidad llega aquí sin datos fiscales, lo regresamos
+             setError('No cuentas con datos fiscales registrados.');
+             return;
+          }
+          setIsGenerating(true);
+          const blob = await generateConstanciaFiscalPDF(user);
+          setPdfBlob(blob);
+          setIsGenerating(false);
+        }
+        else if (documentType === 'curp') {
+          setIsGenerating(true);
+          const blob = await generateCurpPDF(user);
+          setPdfBlob(blob);
+          setIsGenerating(false);
+        } 
+        else {
           setError('Tipo de documento no reconocido.');
         }
+
       } catch (err) {
         console.error('Error generando documento:', err);
         setError('Error al generar el documento. Intenta nuevamente.');
@@ -55,7 +88,12 @@ export default function DocumentPage() {
 
   const handleDownload = () => {
     if (pdfBlob && userData) {
-      downloadPDF(pdfBlob, `Certificado_GobID_${userData.curp}.pdf`);
+      // Ajustamos el nombre de descarga según el tipo de documento
+      const fileName = documentType === 'gobid-certificate' 
+        ? `Certificado_GobID_${userData.curp}.pdf` 
+        : `Constancia_${userData.curp}.pdf`;
+
+      downloadPDF(pdfBlob, fileName);
     }
   };
 
