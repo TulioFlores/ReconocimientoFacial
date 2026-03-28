@@ -1,8 +1,10 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CameraZone from '../../components/login/CameraZone';
 import BiometricActions from '../../components/login/BiometricActions';
+import { getCookie } from '@/utils/getCookie';
+
 import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {

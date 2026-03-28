@@ -1,6 +1,7 @@
 'use client'
 import { ShieldCheck, User } from 'lucide-react';
-
+import { getCookie } from '@/utils/getCookie';
+import {useState, useEffect} from 'react'
 // 1. Definimos la estructura de los datos que vamos a recibir
 interface UserProfileProps {
   user?: {
@@ -13,7 +14,15 @@ interface UserProfileProps {
 
 // 2. Recibimos la prop "user"
 export default function UserProfileCard({ user }: UserProfileProps) {
-  
+  const [confidence, setConfidence] = useState<string | null>(null);
+  useEffect(() => {
+    // 2. Buscamos la cookie SOLO cuando el componente se monta en el cliente
+    const savedConfidence = getCookie('login_confidence');
+    
+    if (savedConfidence) {
+      setConfidence(savedConfidence);
+    }
+  }, []); // El array vacío asegura que esto solo corra una vez
   // Si por alguna razón no llega el usuario, mostramos el mensaje de error
   if (!user) {
     return (
@@ -64,7 +73,7 @@ export default function UserProfileCard({ user }: UserProfileProps) {
           <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Confianza de Identidad</p>
           {/* 6. Inyectamos la confianza (o un valor por defecto alto si tu endpoint /me no lo devuelve) */}
           <p className="text-green-600 font-bold">
-            {user.confidence ? (user.confidence * 100).toFixed(1) : '99.8'}%
+            {confidence}%
           </p>
         </div>
       </div>

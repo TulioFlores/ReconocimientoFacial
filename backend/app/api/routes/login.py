@@ -77,7 +77,7 @@ async def verify_login_with_vector(payload: LoginVectorRequest, response: Respon
         
         # 5. Calcular nivel de confianza
         confidence = max(0.0, 1.0 - (best_distance / 0.6))
-        
+        confidence_percentage = round(confidence * 100, 2)
         # Establecer cookie de sesión
         response.set_cookie(
             key="user_session",
@@ -87,7 +87,14 @@ async def verify_login_with_vector(payload: LoginVectorRequest, response: Respon
             samesite="lax",
             secure=False
         )
-        
+        response.set_cookie(
+            key="login_confidence",
+            value=str(confidence_percentage),
+            httponly=False, # <-- ¡CLAVE! Esto permite que el frontend la lea
+            max_age=86400,
+            samesite="lax",
+            secure=False
+        ) 
         # 6. Retornar información del usuario
         return LoginResponse(
             status="success",

@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getCookie } from '@/utils/getCookie';
 import { CheckCircle2, Download, Home, FileText, Loader } from 'lucide-react';
 import {generateConstanciaFiscalPDF, generateGobIDCertificatePDF, downloadPDF, generateCurpPDF} from '@/utils/pdfGenerator'
 
@@ -16,7 +17,16 @@ export default function DocumentPage() {
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [documentNombre, setDocumentNombre] = useState<string | null>(null);
+   const [confidence, setConfidence] = useState<string | null>(null);
+   useEffect(() => {
+     // 2. Buscamos la cookie SOLO cuando el componente se monta en el cliente
+     const savedConfidence = getCookie('login_confidence');
+     
+     if (savedConfidence) {
+       setConfidence(savedConfidence);
+     }
+   }, []); // El array vacío asegura que esto solo corra una vez
   // Cargar datos del usuario y generar PDF
   useEffect(() => {
     const loadAndGeneratePDF = async () => {
@@ -52,6 +62,7 @@ export default function DocumentPage() {
           const blob = await generateGobIDCertificatePDF(user); 
           setPdfBlob(blob);
           setIsGenerating(false);
+          setDocumentNombre("Certificado GobID");
         } 
         // Aquí puedes agregar la condición para tu nueva constancia fiscal
         else if (documentType === 'constancia-fiscal') {
@@ -64,12 +75,16 @@ export default function DocumentPage() {
           const blob = await generateConstanciaFiscalPDF(user);
           setPdfBlob(blob);
           setIsGenerating(false);
+          setDocumentNombre("Constancia Fiscal");
+
         }
         else if (documentType === 'curp') {
           setIsGenerating(true);
           const blob = await generateCurpPDF(user);
           setPdfBlob(blob);
           setIsGenerating(false);
+          setDocumentNombre("CURP");
+
         } 
         else {
           setError('Tipo de documento no reconocido.');
@@ -160,7 +175,7 @@ export default function DocumentPage() {
                   <FileText className="w-16 h-16 text-primary mx-auto" />
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">PDF Generado Exitosamente</p>
-                    <p className="font-semibold text-foreground">Certificado GobID</p>
+                    <p className="font-semibold text-foreground">{documentNombre}</p>
                   </div>
                   <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium">
                     ✓ Listo para descargar
@@ -201,7 +216,7 @@ export default function DocumentPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Confianza:</span>
-                  <span className="font-medium text-green-600">{(userData?.confidence ?? 0 * 100).toFixed(2)}%</span>
+                  <span className="font-medium text-green-600">{confidence}%</span>
                 </div>
               </div>
             </div>

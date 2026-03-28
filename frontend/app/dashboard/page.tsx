@@ -59,7 +59,7 @@ const router = useRouter();
   const handleGenerateCurp = () => {
     router.push('/document?type=curp');
   };
-
+  
   // Mostrar un loader mientras verifica la sesión
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Cargando tu perfil...</div>;
