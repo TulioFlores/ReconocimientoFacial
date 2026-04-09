@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@vladmandic/face-api": "^1.7.15",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
