@@ -1,8 +1,8 @@
 import InputField from '../InputField';
-import { IneData } from '../../app/registration/page';
+import { IneData } from '../../app/signup/page';
 
 export default function ValidationForm({ data }: { data: IneData }) {
-  
+
   // Prepara los datos para mostrarlos, usando un string vacío como fallback si una propiedad no existe.
   const displayData = {
     fullName: `${data.nombre || ''} ${data.apellido_paterno || ''} ${data.apellido_materno || ''}`.trim(),
@@ -16,11 +16,11 @@ export default function ValidationForm({ data }: { data: IneData }) {
   return (
     <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full">
       <h2 className="text-foreground font-semibold mb-6">Formulario de validación de datos</h2>
-      
+
       <div className="space-y-4">
         {/* Nombre completo ocupa toda la fila */}
         <InputField label="Nombre completo" value={displayData.fullName} />
-        
+
         {/* Dirección ocupa toda la fila */}
         <InputField label="Dirección" value={displayData.address} />
 

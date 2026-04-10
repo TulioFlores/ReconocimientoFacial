@@ -1,26 +1,27 @@
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 
-export default function Logo() {
+export default function Logo({ invert = false }: { invert?: boolean }) {
     return (
         <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <div className="flex items-center gap-2.5">
                 <Image
-                    src="/logo_rfa.svg"       // Ruta relativa a la carpeta 'public'
+                    src="/logo_rfa.svg"
                     alt="Logo de GobID"
-                    width={32}            // Ajusta el ancho según necesites
-                    height={32}           // Ajusta el alto según necesites
-                    priority              // Carga el logo inmediatamente (recomendado para Navbars)
-                    className="w-auto h-8" // Clases opcionales para control extra
+                    width={50}
+                    height={50}
+                    priority
+                    className={`w-auto h-12 transition-all duration-500 ${invert ? '' : 'brightness-100 invert'}`}
                 />
                 <div>
-                    <h1 className="font-bold text-gray-800 text-lg leading-none">GobID</h1>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 font-medium uppercase tracking-wider">
-                        Plataforma de verificación de identidad
+                    <h1 className={`font-bold text-lg leading-none transition-colors duration-500 ${invert ? 'text-white' : 'text-slate-800'}`}>
+                        GobID
+                    </h1>
+                    <p className={`text-[10px] sm:text-xs mt-1 font-medium uppercase tracking-wider transition-colors duration-500 ${invert ? 'text-white' : 'text-slate-800'}`}>
+                        Verificación de identidad
                     </p>
                 </div>
-            </Link>
+            </div>
         </div>
     );
 }

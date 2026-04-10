@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Camera, UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
-import { IneData } from '../../app/registration/page';
+import { IneData } from '../../app/signup/page';
 
 export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data: IneData) => void }) {
   const [file, setFile] = useState<File | null>(null);
@@ -29,7 +29,7 @@ export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data
     setError(null);
 
     const formData = new FormData();
-    formData.append("file", file); 
+    formData.append("file", file);
 
     try {
       const response = await fetch("http://localhost:8000/api/v1/scan-ine-parsed", {
@@ -41,7 +41,7 @@ export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data
 
       const data = await response.json();
 
-      onDataExtracted(data); 
+      onDataExtracted(data);
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || "Error de conexión");
@@ -54,24 +54,24 @@ export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data
     // CAMBIO 1: Se quitó max-w-2xl mx-auto y se agregó w-full flex flex-col para igualar a ValidationForm
     <div className="bg-background p-6 rounded-xl shadow-sm border border-border h-full w-full flex flex-col">
       <h2 className="text-foreground font-semibold mb-6 text-xl">Zona de escaneo de INE</h2>
-      
+
       {/* CAMBIO 2: flex-grow y min-h para que tome el alto restante si está junto al otro formulario */}
-      <div 
+      <div
         onClick={(!loading && !isSuccess) ? handleDivClick : undefined}
         className={`flex-grow border-2 border-dashed rounded-xl bg-muted/30 min-h-[320px] flex flex-col items-center justify-center gap-4 relative overflow-hidden transition-colors
-          ${(!loading && !isSuccess) 
+          ${(!loading && !isSuccess)
             ? "border-border/60 hover:bg-primary/5 cursor-pointer" // Estado normal/clickeable
             : "border-border/30 opacity-70 cursor-default" // Estado bloqueado (cargando o éxito)
           }
         `}
       >
         {/* Input oculto */}
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          onChange={handleFileChange} 
-          accept="image/*" 
-          className="hidden" 
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
           disabled={loading || isSuccess}
         />
 
@@ -93,11 +93,11 @@ export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data
 
       {/* Botón de acción */}
       <div className="mt-6 flex justify-center">
-        <button 
+        <button
           onClick={file ? handleUpload : handleDivClick}
           disabled={loading || isSuccess} // <-- Se deshabilita si está cargando O si ya tuvo éxito
           className={`w-full sm:w-auto px-8 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all shadow-md disabled:cursor-not-allowed
-            ${isSuccess 
+            ${isSuccess
               ? "bg-green-600 text-white disabled:opacity-100" // Estilo de éxito (verde)
               : "bg-primary text-primary-foreground hover:opacity-90 shadow-primary/20 disabled:opacity-50" // Estilo normal
             }

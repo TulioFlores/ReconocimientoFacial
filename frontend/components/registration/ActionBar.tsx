@@ -1,6 +1,6 @@
 import { ScanFace, RefreshCw, Lock } from 'lucide-react';
 
-export default function ActionBar({ onConfirm }: { onConfirm: () => void }) {
+export default function ActionBar({ onConfirm, onRetry }: { onConfirm: () => void; onRetry: () => void }) {
   return (
     <div className="mt-6">
       {/* Contenedor Principal (Card) */}
@@ -13,7 +13,10 @@ export default function ActionBar({ onConfirm }: { onConfirm: () => void }) {
         </button>
 
         {/* Botón Secundario */}
-        <button className="text-muted-foreground hover:text-foreground font-medium flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-lg transition-colors">
+        <button 
+          onClick={onRetry}
+          className="text-muted-foreground hover:text-foreground font-medium flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+        >
           <RefreshCw size={18} />
           Subir otra foto
         </button>

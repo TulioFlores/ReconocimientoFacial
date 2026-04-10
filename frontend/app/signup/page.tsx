@@ -3,9 +3,9 @@ import { useState } from 'react';
 import IdUploader from '../../components/registration/IdUploader';
 import ValidationForm from '../../components/registration/ValidationForm';
 import ActionBar from '../../components/registration/ActionBar';
-import BiometricPage from '../../components/registration/BiometricPage'; 
+import BiometricPage from '../../components/registration/BiometricPage';
 import FormularioConfirmacion from '../../components/registration/FormularioConfirmacion';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 export interface IneData {
   nombre?: string;
   apellido_paterno?: string;
@@ -24,15 +24,16 @@ type RegistrationStep = 'ine' | 'biometria' | 'confirmacion';
 function App() {
   // --- ESTADOS ---
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('ine');
-  const [extractedData, setExtractedData] = useState<IneData | null>(null); 
+  const [extractedData, setExtractedData] = useState<IneData | null>(null);
   const [biometricVector, setBiometricVector] = useState<number[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploaderKey, setUploaderKey] = useState(0); // Para forzar el reseteo del componente
   const router = useRouter();
-// --- FUNCIONES ---
+  // --- FUNCIONES ---
   // Esta función se ejecuta cuando el usuario pone su correo y le da "Crear Cuenta"
   const handleFinalSubmit = async (email: string) => {
     setIsSubmitting(true);
-    
+
     try {
       // 1. Armamos el paquete EXACTAMENTE como lo espera FastAPI (EnrollmentRequest)
       const payloadFinal = {
@@ -43,9 +44,9 @@ function App() {
         email: email,
         vector_facial: biometricVector || []
       };
-      
+
       console.log("Enviando datos reales a FastAPI...", payloadFinal);
-      
+
       // 2. Hacemos la petición HTTP real a nuestro backend de Python
       const response = await fetch('http://localhost:8000/enroll', {
         method: 'POST',
@@ -80,12 +81,12 @@ function App() {
   // --- ACTO 2: PANTALLA DE BIOMETRÍA ---
   if (currentStep === 'biometria') {
     return (
-      <BiometricPage 
+      <BiometricPage
         onVectorSuccess={(vector: number[]) => {
           console.log("¡Vector recibido en App!", vector.length, "dimensiones");
           setBiometricVector(vector);     // Guardamos el vector
           setCurrentStep('confirmacion'); // Brincamos al último paso
-        }} 
+        }}
       />
     );
   }
@@ -98,14 +99,14 @@ function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md h-[550px]">
-          <FormularioConfirmacion 
+          <FormularioConfirmacion
             extractedData={{
               fullName: fullName || 'Nombre no detectado',
               curp: extractedData?.curp || 'CURP no detectado',
               fecha_nacimiento: extractedData?.fecha_nacimiento || 'Fecha de nacimiento no detectada'
-            }} 
-            isLoading={isSubmitting} 
-            onSubmit={handleFinalSubmit} 
+            }}
+            isLoading={isSubmitting}
+            onSubmit={handleFinalSubmit}
           />
         </div>
       </div>
@@ -116,7 +117,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
-        
+
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800">Verificación de identidad</h2>
           <p className="text-gray-500 mt-1">Sube tu identificación oficial y verifica tu información</p>
@@ -128,18 +129,24 @@ function App() {
         */}
         {extractedData ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <IdUploader onDataExtracted={setExtractedData} />
+            <IdUploader key={uploaderKey} onDataExtracted={setExtractedData} />
             <ValidationForm data={extractedData} />
           </div>
         ) : (
           <div className="flex justify-center">
-            <IdUploader onDataExtracted={setExtractedData} />
+            <IdUploader key={uploaderKey} onDataExtracted={setExtractedData} />
           </div>
         )}
 
         {/* La barra de acciones solo se muestra si los datos de la INE ya fueron validados */}
         {extractedData && (
-          <ActionBar onConfirm={() => setCurrentStep('biometria')} />
+          <ActionBar
+            onConfirm={() => setCurrentStep('biometria')}
+            onRetry={() => {
+              setExtractedData(null);
+              setUploaderKey(prev => prev + 1);
+            }}
+          />
         )}
       </main>
     </div>

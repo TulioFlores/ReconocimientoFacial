@@ -1,13 +1,9 @@
-import Navbar from '../components/landing/Navbar';
 import Hero from '../components/landing/Hero';
 import Footer from '../components/landing/Footer';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
-      {/* 1. Navegación */}
-      <Navbar />
-
       <main className="flex-grow">
         {/* 2. Hero Section */}
         <Hero />
@@ -20,11 +16,11 @@ export default function LandingPage() {
                 Agiliza tus trámites
               </h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                GobID reduce los tiempos de espera de días a segundos, 
+                GobID reduce los tiempos de espera de días a segundos,
                 eliminando la burocracia en tus gestiones más importantes.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Accede a servicios gubernamentales sin largas filas ni 
+                Accede a servicios gubernamentales sin largas filas ni
                 documentación física. Tu identidad verificada al instante.
               </p>
             </div>
@@ -65,11 +61,11 @@ export default function LandingPage() {
                 Seguridad sin precedentes
               </h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Nuestra tecnología biométrica asegura tu identidad con 
+                Nuestra tecnología biométrica asegura tu identidad con
                 los más altos estándares, protegiéndote contra la suplantación.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Protocolos de encriptación de nivel militar garantizan que 
+                Protocolos de encriptación de nivel militar garantizan que
                 tus datos biométricos permanezcan completamente privados y seguros.
               </p>
             </div>
@@ -83,10 +79,10 @@ export default function LandingPage() {
               Confianza respaldada por resultados
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto mb-16">
-              Millones de ciudadanos confían en GobID para acceder a sus servicios 
+              Millones de ciudadanos confían en GobID para acceder a sus servicios
               gubernamentales de forma segura y eficiente.
             </p>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="flex flex-col items-center">
                 <span className="text-4xl font-bold text-primary mb-2">2.5M+</span>
@@ -116,7 +112,7 @@ export default function LandingPage() {
                 ¿Listo para simplificar tu<br className="hidden md:block" /> acceso a servicios?
               </h2>
               <p className="text-primary-foreground/80 max-w-xl mx-auto mb-10 text-lg">
-                Únete a millones de ciudadanos que ya disfrutan de una 
+                Únete a millones de ciudadanos que ya disfrutan de una
                 experiencia gubernamental moderna, segura y sin fricciones.
               </p>
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4">

@@ -16,35 +16,10 @@ export default function LoginPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
   const router = useRouter();
 
-  // Función que se dispara tras validar que es una persona (parpadeó) y tomar la foto automáticamente
-  const handleCaptureSuccess = async (base64Image: string) => {
+  // Función que se dispara tras validar que es una persona y obtener el vector facial
+  const handleVectorSuccess = async (vector: number[]) => {
     setIsVerifying(true);
-    setMessage({ type: null, text: 'Validación Liveness exitosa. Extrayendo vector facial...' });
-
-    try {
-      // 1. Extraer el vector facial
-      const fetchResponse = await fetch(base64Image);
-      const blob = await fetchResponse.blob();
-      const formData = new FormData();
-      formData.append("file", blob, "rostro_capturado.jpg");
-
-      const response = await fetch("http://localhost:8000/api/v1/extract-vector", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Error al extraer el vector facial");
-      }
-
-      // 2. Automáticamente iniciar sesión al obtener el vector
-      await handleLoginVector(data.vector);
-    } catch (err: any) {
-      console.error("Error en extracción:", err);
-      setMessage({ type: 'error', text: err.message });
-      setIsVerifying(false);
-    }
+    await handleLoginVector(vector);
   };
 
   // Esta función atrapa el vector de la cámara y lo envía al endpoint de login
@@ -133,7 +108,7 @@ export default function LoginPage() {
 
           {/* Zona de la cámara con validación de Liveness automatizada */}
           <div className="w-full max-w-md bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-            <LivenessCapture onCaptureSuccess={handleCaptureSuccess} />
+            <LivenessCapture onVectorSuccess={handleVectorSuccess} />
           </div>
 
 
