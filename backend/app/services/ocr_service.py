@@ -158,8 +158,8 @@ def parse_ine_text(raw_text: str) -> INEResponse:
     data['seccion'] = seccion_match.group(1) if seccion_match else None
     
     # 6. Nombre Completo: Entre SEXO [H/M] y DOMICILIO
-    # Usamos \s* en lugar de \s+ antes del [HM] por si el OCR junta "SEXOH"
-    nombre_match = re.search(r'SEXO\s*[HM]\s+(.+?)\s+DOMICILIO', text, re.IGNORECASE)
+    # Usamos \s* para ser flexibles si el OCR junta "JUANPEREZDOMICILIO"
+    nombre_match = re.search(r'SEXO\s*[HM]\s+(.+?)\s*DOMICILIO', text, re.IGNORECASE)
     
     if nombre_match:
         nombre_completo = nombre_match.group(1).strip()
@@ -183,9 +183,17 @@ def parse_ine_text(raw_text: str) -> INEResponse:
         data['apellido_materno'] = None
         data['nombre'] = None
     
-    # 7. Domicilio: Entre DOMICILIO y CLAVE DE ELECTOR
-    domicilio_match = re.search(r'DOMICILIO\s+(.+?)\s+CLAVE DE ELECTOR', text, re.IGNORECASE)
-    data['domicilio'] = domicilio_match.group(1).strip() if domicilio_match else None
+    # 7. Domicilio: Flexible para soportar errores de OCR en 'CLAVE DE ELECTOR'
+    # Eliminamos \b y \s+ antes de las palabras de parada para que corte incluso si están pegadas (ej. "CALLE 10CLAVE")
+    domicilio_match = re.search(r'DOMICILIO\s+(.+?)(?:CLAVE|C[LI]AVE|CURP|ESTADO|MUNICIPIO|FOLIO|A[ÑN]O|REGISTRO)', text, re.IGNORECASE)
+    
+    if domicilio_match:
+        data['domicilio'] = domicilio_match.group(1).strip()
+    else:
+        # Fallback: Si el OCR mutiló por completo las palabras clave inferiores, capturamos todo lo que queda.
+        # Preferible tener un domicilio con algo de basura al final, que un domicilio None.
+        fallback_match = re.search(r'DOMICILIO\s+(.*)', text, re.IGNORECASE)
+        data['domicilio'] = fallback_match.group(1).strip() if fallback_match else None
     
     # Crear objeto INEResponse filtrando valores None
     return INEResponse(**{k: v for k, v in data.items() if v is not None})

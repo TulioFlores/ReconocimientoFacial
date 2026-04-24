@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # Sincroniza tu carpeta local "backend" con la carpeta "/app" del contenedor
+      - .:/app
+    # Sobrescribimos el comando del Dockerfile para encender el modo "--reload"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
