@@ -86,7 +86,7 @@ export default function FormularioConfirmacion({ extractedData, isLoading, onSub
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="tulio@ejemplo.com"
+            placeholder="name@example.com"
             disabled={isLoading}
             className={`w-full p-3 rounded-lg border bg-background text-foreground text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:opacity-50 ${emailError ? 'border-destructive focus:border-destructive' : 'border-border focus:border-primary'
               }`}

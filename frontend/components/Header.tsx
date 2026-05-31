@@ -3,6 +3,7 @@
 import React from 'react';
 import Logo from './Logo';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/utils/api';
 
 export default function Header() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // 1. Llamada al backend para borrar cookies HttpOnly
-      const response = await fetch('http://localhost:8000/logout', {
+      const response = await fetch(apiUrl('/logout'), {
         method: 'POST',
         // Importante: incluir las credenciales para que el navegador 
         // envíe las cookies que el servidor debe borrar

@@ -6,19 +6,31 @@ import ServiceCard from '../../components/dashboard/ServiceCard';
 import SlideOver from '../../components/dashboard/SlideOver';
 import FiscalForm from '../../components/dashboard/FiscalForm';
 import { useState, useEffect } from 'react';
+import { apiUrl } from '@/utils/api';
+interface UserData {
+  full_name: string;
+  curp: string;
+  email: string;
+  has_fiscal_data?: boolean;
+  ocrCp?: string;
+  ocrAddress?: string;
+  confidence?: number;
+  [key: string]: any;
+}
+
 export default function DashboardPage() {
 const router = useRouter();
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   
   // Nuevos estados para manejar los datos del usuario
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Función para obtener los datos de la sesión actual
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/me', {
+        const response = await fetch(apiUrl('/me'), {
           method: 'GET',
           // ¡ESTO ES CRUCIAL! Le dice al navegador que envíe la cookie HttpOnly
           credentials: 'include', 
@@ -54,7 +66,11 @@ const router = useRouter();
   };
 
   const handleGenerateConstanciaFiscal = () => {
-    router.push('/document?type=constancia-fiscal');
+    if (userData && !userData.has_fiscal_data) {
+      setIsSlideOverOpen(true);
+    } else {
+      router.push('/document?type=constancia-fiscal');
+    }
   };
   const handleGenerateCurp = () => {
     router.push('/document?type=curp');
@@ -123,9 +139,10 @@ const router = useRouter();
                 <FiscalForm
                   initialCurp={userData.curp}
                   initialCp={userData.ocrCp}
-                  initialAddress={userData.ocrAddress}
                   onSubmitSuccess={() => {
                     setIsSlideOverOpen(false);
+                    setUserData(prev => prev ? { ...prev, has_fiscal_data: true } : prev);
+                    router.push('/document?type=constancia-fiscal');
                   }}
                 />
               </SlideOver>

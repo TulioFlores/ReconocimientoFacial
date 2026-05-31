@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Camera, UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
 import { IneData } from '../../app/signup/page';
+import { apiUrl } from '@/utils/api';
 
 export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data: IneData) => void }) {
   const [file, setFile] = useState<File | null>(null);
@@ -32,7 +33,7 @@ export default function IdUploader({ onDataExtracted }: { onDataExtracted: (data
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/scan-ine-parsed", {
+      const response = await fetch(apiUrl('/api/v1/scan-ine-parsed'), {
         method: "POST",
         body: formData,
       });

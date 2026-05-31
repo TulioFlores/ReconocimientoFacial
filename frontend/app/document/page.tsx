@@ -5,6 +5,18 @@ import { useEffect, useState } from 'react';
 import { getCookie } from '@/utils/getCookie';
 import { CheckCircle2, Download, Home, FileText, Loader } from 'lucide-react';
 import {generateConstanciaFiscalPDF, generateGobIDCertificatePDF, downloadPDF, generateCurpPDF} from '@/utils/pdfGenerator'
+import { apiUrl } from '@/utils/api';
+
+interface UserData {
+  full_name: string;
+  curp: string;
+  email: string;
+  has_fiscal_data?: boolean;
+  ocrCp?: string;
+  ocrAddress?: string;
+  confidence?: number;
+  [key: string]: any;
+}
 
 export default function DocumentPage() {
   const searchParams = useSearchParams();
@@ -35,7 +47,7 @@ export default function DocumentPage() {
         setError(null);
 
         // 1. Obtener datos del usuario desde el backend usando la cookie
-        const response = await fetch('http://localhost:8000/me', { // Ajusta tu URL base si es diferente
+        const response = await fetch(apiUrl('/me'), {
           method: 'GET',
           credentials: 'include', // Súper importante para que envíe la sesión
         });

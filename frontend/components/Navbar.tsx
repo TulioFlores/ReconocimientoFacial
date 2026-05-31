@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import { LogOut } from 'lucide-react';
+import { apiUrl } from '@/utils/api';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -21,7 +22,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:8000/logout', {
+      const response = await fetch(apiUrl('/logout'), {
         method: 'POST',
         credentials: 'include'
       });

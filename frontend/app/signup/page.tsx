@@ -6,6 +6,7 @@ import ActionBar from '../../components/registration/ActionBar';
 import BiometricPage from '../../components/registration/BiometricPage';
 import FormularioConfirmacion from '../../components/registration/FormularioConfirmacion';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/utils/api';
 export interface IneData {
   nombre?: string;
   apellido_paterno?: string;
@@ -48,7 +49,7 @@ function App() {
       console.log("Enviando datos reales a FastAPI...", payloadFinal);
 
       // 2. Hacemos la petición HTTP real a nuestro backend de Python
-      const response = await fetch('http://localhost:8000/enroll', {
+      const response = await fetch(apiUrl('/enroll'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

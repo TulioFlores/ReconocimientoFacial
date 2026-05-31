@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { apiUrl } from '@/utils/api';
 
 interface FiscalFormProps {
   initialCurp?: string; 
@@ -39,7 +40,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:8000/fiscal/guardar', { // Ajusta tu URL base
+      const response = await fetch(apiUrl('/fiscal/guardar'), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -81,7 +82,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             required
             maxLength={13}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border outline-none"
-            placeholder="Ej. GOML901231HDF"
+            placeholder="RFC example"
           />
         </div>
         <div>

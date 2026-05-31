@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as faceapi from '@vladmandic/face-api';
 import { Camera, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { apiUrl } from '@/utils/api';
 
 export default function LivenessCapture({ onVectorSuccess }: { onVectorSuccess: (vector: number[]) => void }) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -152,7 +153,7 @@ export default function LivenessCapture({ onVectorSuccess }: { onVectorSuccess: 
             formData.append("file", blob, "face.jpg");
 
             // 2. Llamada a la API
-            const response = await fetch("http://localhost:8000/api/v1/extract-vector", {
+            const response = await fetch(apiUrl('/api/v1/extract-vector'), {
                 method: "POST",
                 body: formData,
             });

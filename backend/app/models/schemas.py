@@ -23,7 +23,7 @@ class BiometricEnrollRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "curp": "FORT040617HJCLMLA9",
+                "curp": "AAAA000000HDFXXX00",
                 "foto_rostro": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjeLawAAAABJRU5ErkJggg=="
             }
         }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { apiUrl } from '@/utils/api';
 
 // Importación dinámica excluyendo Server-Side Rendering (SSR)
 const LivenessCapture = dynamic(
@@ -30,7 +31,7 @@ export default function LoginPage() {
 
     try {
       // Enviamos el vector al endpoint /login/verify
-      const response = await fetch('http://localhost:8000/login/verify', {
+      const response = await fetch(apiUrl('/login/verify'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
